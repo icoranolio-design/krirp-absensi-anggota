@@ -1,0 +1,1011 @@
+<!-- ====================================================
+     GANTI WEBHOOK DI BAWAH INI:
+     ==================================================== -->
+<!-- WEBHOOK_URL = "https://discord.com/api/webhooks/ISI_WEBHOOK_KAMU" -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRIRP — Sistem Absensi Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #D4A843;
+    --gold-light: #F0C96A;
+    --gold-dim: rgba(212,168,67,0.15);
+    --navy: #0A0E1A;
+    --navy-card: #0F1526;
+    --navy-border: rgba(212,168,67,0.2);
+    --text: #E8EAF0;
+    --text-dim: #7A8099;
+    --green: #22C55E;
+    --red: #EF4444;
+    --blue: #3B82F6;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--navy);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px 16px 40px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(212,168,67,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,67,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -180px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { width: 100%; max-width: 500px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    padding: 32px 0 24px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--gold-dim);
+    border: 1px solid var(--navy-border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .logo-emblem {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #1A2040, #0F1526);
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 30px rgba(212,168,67,0.3), inset 0 0 20px rgba(212,168,67,0.05);
+    font-size: 32px;
+  }
+
+  h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── LIVE CLOCK ── */
+  .clock-bar {
+    background: rgba(212,168,67,0.06);
+    border: 1px solid var(--navy-border);
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .clock-time {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .clock-date {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  .clock-right { text-align: right; }
+
+  .sesi-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .sesi-pagi  { background: rgba(59,130,246,0.15); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); }
+  .sesi-siang { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid var(--navy-border); }
+  .sesi-sore  { background: rgba(249,115,22,0.15); color: #FB923C; border: 1px solid rgba(249,115,22,0.3); }
+  .sesi-malam { background: rgba(139,92,246,0.15); color: #A78BFA; border: 1px solid rgba(139,92,246,0.3); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--navy-border);
+  }
+
+  /* ── FORM FIELDS ── */
+  .field { margin-bottom: 14px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+  }
+
+  .field-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .field-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+  }
+
+  .field input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--gold);
+    background: rgba(212,168,67,0.06);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+  }
+
+  .field select option { background: #1A2040; color: var(--text); }
+
+  /* ── KETERANGAN RADIO ── */
+  .keterangan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .ket-option {
+    cursor: pointer;
+    display: block;
+  }
+
+  .ket-option input { display: none; }
+
+  .ket-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .ket-option input:checked + .ket-label {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold-light);
+  }
+
+  .ket-label:hover { background: rgba(255,255,255,0.06); }
+
+  /* ── CATATAN ── */
+  .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    resize: none;
+    height: 72px;
+    transition: all 0.2s;
+  }
+
+  .field textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+  .field textarea:focus {
+    border-color: var(--gold);
+    background: rgba(212,168,67,0.06);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+  }
+
+  /* ── BUTTON ── */
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B);
+    background-size: 200% 100%;
+    color: #0A0E1A;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-submit:hover {
+    background-position: 100% 0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212,168,67,0.4);
+  }
+
+  .btn-submit:active { transform: translateY(0); }
+
+  .btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── STATUS ── */
+  .status-wrap {
+    margin-top: 14px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .status-msg {
+    display: none;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .status-msg.show { display: block; }
+  .status-msg.sukses { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #4ADE80; }
+  .status-msg.error  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #F87171; }
+  .status-msg.warn   { background: rgba(212,168,67,0.12); border: 1px solid var(--navy-border); color: var(--gold-light); }
+
+  /* ── RIWAYAT HARI INI ── */
+  .log-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 20px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .log-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .log-count {
+    background: var(--gold-dim);
+    border: 1px solid var(--navy-border);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+  }
+
+  .log-empty {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 20px 0;
+    opacity: 0.6;
+  }
+
+  .log-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+  .log-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 11px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .log-avatar {
+    width: 36px; height: 36px;
+    background: var(--gold-dim);
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .log-info { flex: 1; min-width: 0; }
+  .log-nama { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  .log-jam {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .log-ket {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ket-hadir  { background: rgba(34,197,94,0.12); color: #4ADE80; border: 1px solid rgba(34,197,94,0.2); }
+  .ket-izin   { background: rgba(59,130,246,0.12); color: #60A5FA; border: 1px solid rgba(59,130,246,0.2); }
+  .ket-dinas  { background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.2); }
+  .ket-sakit  { background: rgba(239,68,68,0.12); color: #F87171; border: 1px solid rgba(239,68,68,0.2); }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-item {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0.5;
+    padding-top: 4px;
+    padding-bottom: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── LOADER SPIN ── */
+  .spin {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(10,14,26,0.3);
+    border-top-color: #0A0E1A;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── KONFIRMASI MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: #131929;
+    border: 1px solid var(--navy-border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: fadeIn 0.25s ease;
+  }
+
+  .modal h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .modal p { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px; }
+
+  .modal-preview {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .modal-preview strong { color: var(--gold-light); }
+
+  .modal-btns { display: flex; gap: 10px; }
+
+  .btn-cancel {
+    flex: 1; padding: 13px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-cancel:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+  .btn-confirm {
+    flex: 2; padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #B8860B, #D4A843);
+    color: #0A0E1A;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-confirm:hover { box-shadow: 0 4px 16px rgba(212,168,67,0.4); }
+
+  @media (max-width: 400px) {
+    h1 { font-size: 22px; }
+    .clock-time { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge"><span class="badge-dot"></span>Sistem Aktif</div>
+    <div class="logo-emblem">⚖️</div>
+    <h1>KRIRP Absensi</h1>
+    <div class="subtitle">Kepolisian Republik Indonesia — Sistem Presensi Digital</div>
+  </div>
+
+  <!-- LIVE CLOCK -->
+  <div class="clock-bar">
+    <div>
+      <div class="clock-time" id="jam">--:--:--</div>
+      <div class="clock-date" id="tglLengkap">Memuat...</div>
+    </div>
+    <div class="clock-right">
+      <div class="sesi-badge" id="sesiLabel">—</div>
+      <div class="clock-date" style="margin-top:6px">Sesi Aktif</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num" id="statHadir">0</div>
+      <div class="stat-label">Hadir</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statIzin">0</div>
+      <div class="stat-label">Izin/Dinas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="card">
+    <div class="card-title">Data Anggota</div>
+
+    <div class="field">
+      <label>Nama Lengkap</label>
+      <div class="field-inner">
+        <span class="field-icon">👤</span>
+        <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Pangkat</label>
+      <div class="field-inner">
+        <span class="field-icon">🎖️</span>
+        <select id="pangkat">
+          <option value="" disabled selected>Pilih pangkat</option>
+          <optgroup label="Perwira Tinggi">
+            <option>Jenderal</option>
+            <option>Komisaris Jenderal (Komjend)</option>
+            <option>Inspektur Jenderal (Irjen)</option>
+            <option>Brigadir Jenderal (Brigjen)</option>
+          </optgroup>
+          <optgroup label="Perwira Menengah">
+            <option>Komisaris Besar (Kombes)</option>
+            <option>Ajun Komisaris Besar (AKBP)</option>
+            <option>Komisaris Polisi (Kompol)</option>
+          </optgroup>
+          <optgroup label="Perwira Pertama">
+            <option>Ajun Komisaris Polisi (AKP)</option>
+            <option>Inspektur Polisi Satu (Iptu)</option>
+            <option>Inspektur Polisi Dua (Ipda)</option>
+          </optgroup>
+          <optgroup label="Bintara">
+            <option>Aiptu</option>
+            <option>Aipda</option>
+            <option>Bripka</option>
+            <option>Brigadir</option>
+            <option>Briptu</option>
+            <option>Bripda</option>
+          </optgroup>
+          <optgroup label="Tamtama">
+            <option>Abiptu</option>
+            <option>Abipda</option>
+            <option>Bharaka</option>
+            <option>Bharatu</option>
+            <option>Bharada</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Jabatan</label>
+      <div class="field-inner">
+        <span class="field-icon">💼</span>
+        <input type="text" id="jabatan" placeholder="Contoh: Kanit Reskrim" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Satuan / Kesatuan</label>
+      <div class="field-inner">
+        <span class="field-icon">🏛️</span>
+        <input type="text" id="satuan" placeholder="Contoh: Polres Jakarta Barat" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Keterangan Kehadiran</label>
+      <div class="keterangan-grid">
+        <label class="ket-option">
+          <input type="radio" name="keterangan" value="HADIR" checked>
+          <div class="ket-label">✅ Hadir</div>
+        </label>
+        <label class="ket-option">
+          <input type="radio" name="keterangan" value="IZIN">
+          <div class="ket-label">📋 Izin</div>
+        </label>
+        <label class="ket-option">
+          <input type="radio" name="keterangan" value="DINAS LUAR">
+          <div class="ket-label">🚔 Dinas Luar</div>
+        </label>
+        <label class="ket-option">
+          <input type="radio" name="keterangan" value="SAKIT">
+          <div class="ket-label">🏥 Sakit</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Catatan (opsional)</label>
+      <textarea id="catatan" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+    </div>
+
+    <button class="btn-submit" id="btnAbsen" onclick="konfirmasi()">
+      KIRIM ABSENSI
+    </button>
+
+    <div class="status-wrap">
+      <div class="status-msg" id="status"></div>
+    </div>
+  </div>
+
+  <!-- LOG HARI INI -->
+  <div class="log-card">
+    <div class="log-header">
+      <div class="log-title">📋 Log Absensi Hari Ini</div>
+      <div class="log-count" id="logCount">0</div>
+    </div>
+    <div id="logList"><div class="log-empty">Belum ada absensi hari ini.</div></div>
+  </div>
+
+  <div class="footer">KRIRP Attendance System v2.0 — Polri Digital</div>
+</div>
+
+<!-- MODAL KONFIRMASI -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>⚠️ Konfirmasi Absensi</h3>
+    <p>Pastikan data berikut sudah benar sebelum mengirim.</p>
+    <div class="modal-preview" id="modalPreview"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="tutupModal()">Batal</button>
+      <button class="btn-confirm" onclick="absen()">Kirim Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =====================================================
+  // GANTI WEBHOOK DI BAWAH INI
+  // =====================================================
+  const WEBHOOK = "https://discord.com/api/webhooks/ISI_WEBHOOK_KAMU";
+  // =====================================================
+
+  // ─── CLOCK ────────────────────────────────────────────
+  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('jam').textContent = `${h}:${m}:${s}`;
+
+    const hari = HARI[now.getDay()];
+    const tgl  = now.getDate();
+    const bln  = BULAN[now.getMonth()];
+    const thn  = now.getFullYear();
+    document.getElementById('tglLengkap').textContent = `${hari}, ${tgl} ${bln} ${thn}`;
+
+    const jam = now.getHours();
+    let sesi = '', cls = '';
+    if (jam >= 5  && jam < 12) { sesi = '🌅 Pagi';  cls = 'sesi-pagi';  }
+    else if (jam >= 12 && jam < 15) { sesi = '☀️ Siang'; cls = 'sesi-siang'; }
+    else if (jam >= 15 && jam < 19) { sesi = '🌇 Sore';  cls = 'sesi-sore';  }
+    else { sesi = '🌙 Malam'; cls = 'sesi-malam'; }
+
+    const el = document.getElementById('sesiLabel');
+    el.textContent = sesi;
+    el.className = 'sesi-badge ' + cls;
+  }
+
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ─── HELPERS ──────────────────────────────────────────
+  function getTanggal() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  }
+
+  function getJam() {
+    return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function getKey(nama) { return `absen_${nama.toLowerCase().trim()}_${getTanggal()}`; }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = `status-msg show ${type}`;
+    setTimeout(() => el.className = 'status-msg', 4500);
+  }
+
+  // ─── LOG LOKAL ────────────────────────────────────────
+  function ambilLog() {
+    const raw = localStorage.getItem(`log_${getTanggal()}`);
+    return raw ? JSON.parse(raw) : [];
+  }
+
+  function simpanLog(entry) {
+    const log = ambilLog();
+    log.push(entry);
+    localStorage.setItem(`log_${getTanggal()}`, JSON.stringify(log));
+  }
+
+  function avatarIcon(ket) {
+    if (ket === 'HADIR') return '🟢';
+    if (ket === 'IZIN') return '🔵';
+    if (ket === 'DINAS LUAR') return '🟡';
+    if (ket === 'SAKIT') return '🔴';
+    return '⚪';
+  }
+
+  function ketClass(ket) {
+    if (ket === 'HADIR') return 'ket-hadir';
+    if (ket === 'IZIN') return 'ket-izin';
+    if (ket === 'DINAS LUAR') return 'ket-dinas';
+    if (ket === 'SAKIT') return 'ket-sakit';
+    return '';
+  }
+
+  function renderLog() {
+    const log = ambilLog();
+    const listEl = document.getElementById('logList');
+    const countEl = document.getElementById('logCount');
+    countEl.textContent = log.length;
+
+    // Stats
+    const hadir = log.filter(x => x.keterangan === 'HADIR').length;
+    const izin  = log.filter(x => x.keterangan === 'IZIN' || x.keterangan === 'DINAS LUAR' || x.keterangan === 'SAKIT').length;
+    document.getElementById('statHadir').textContent = hadir;
+    document.getElementById('statIzin').textContent  = izin;
+    document.getElementById('statTotal').textContent = log.length;
+
+    if (log.length === 0) {
+      listEl.innerHTML = '<div class="log-empty">Belum ada absensi hari ini.</div>';
+      return;
+    }
+
+    listEl.innerHTML = '<ul class="log-list">' +
+      [...log].reverse().map(e => `
+        <li class="log-item">
+          <div class="log-avatar">${avatarIcon(e.keterangan)}</div>
+          <div class="log-info">
+            <div class="log-nama">${e.nama}</div>
+            <div class="log-meta">${e.pangkat} — ${e.jabatan}</div>
+          </div>
+          <span class="log-ket ${ketClass(e.keterangan)}">${e.keterangan}</span>
+          <div class="log-jam">${e.jam}</div>
+        </li>`).join('') +
+      '</ul>';
+  }
+
+  renderLog();
+
+  // ─── MODAL ────────────────────────────────────────────
+  function konfirmasi() {
+    const nama     = document.getElementById('nama').value.trim();
+    const pangkat  = document.getElementById('pangkat').value;
+    const jabatan  = document.getElementById('jabatan').value.trim();
+    const satuan   = document.getElementById('satuan').value.trim();
+    const keterangan = document.querySelector('input[name="keterangan"]:checked').value;
+    const catatan  = document.getElementById('catatan').value.trim();
+
+    if (!nama || !pangkat || !jabatan || !satuan) {
+      showStatus('⚠️  Lengkapi semua data yang wajib diisi!', 'warn');
+      return;
+    }
+
+    if (localStorage.getItem(getKey(nama))) {
+      showStatus('⚠️  Anda sudah melakukan absensi hari ini!', 'warn');
+      return;
+    }
+
+    document.getElementById('modalPreview').innerHTML = `
+      <strong>Nama</strong> : ${nama}<br>
+      <strong>Pangkat</strong> : ${pangkat}<br>
+      <strong>Jabatan</strong> : ${jabatan}<br>
+      <strong>Satuan</strong> : ${satuan}<br>
+      <strong>Status</strong> : ${keterangan}${catatan ? `<br><strong>Catatan</strong> : ${catatan}` : ''}
+    `;
+
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function tutupModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+  }
+
+  // ─── ABSEN ────────────────────────────────────────────
+  async function absen() {
+    tutupModal();
+
+    const nama       = document.getElementById('nama').value.trim();
+    const pangkat    = document.getElementById('pangkat').value;
+    const jabatan    = document.getElementById('jabatan').value.trim();
+    const satuan     = document.getElementById('satuan').value.trim();
+    const keterangan = document.querySelector('input[name="keterangan"]:checked').value;
+    const catatan    = document.getElementById('catatan').value.trim();
+    const jam        = getJam();
+    const tanggal    = getTanggal();
+
+    const btn = document.getElementById('btnAbsen');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span>Mengirim...';
+
+    // Warna embed berdasarkan keterangan
+    const warna = { HADIR: 3329330, IZIN: 3093503, 'DINAS LUAR': 13909771, SAKIT: 15158332 };
+    const emoji  = { HADIR: '✅', IZIN: '📋', 'DINAS LUAR': '🚔', SAKIT: '🏥' };
+
+    const payload = {
+      embeds: [{
+        title: `${emoji[keterangan] || '📌'}  KRIRP — PRESENSI DIGITAL`,
+        color: warna[keterangan] || 13909771,
+        fields: [
+          { name: '👤 Nama Anggota', value: `**${nama}**`,    inline: true },
+          { name: '🎖️ Pangkat',      value: `**${pangkat}**`, inline: true },
+          { name: '💼 Jabatan',      value: `**${jabatan}**`, inline: true },
+          { name: '🏛️ Satuan',       value: `**${satuan}**`,  inline: true },
+          { name: '📍 Keterangan',   value: `**${keterangan}**`, inline: true },
+          { name: '🕒 Jam Absen',    value: `**${jam}**`,     inline: true },
+          { name: '📅 Tanggal',      value: `**${tanggal}**`, inline: false },
+          ...(catatan ? [{ name: '📝 Catatan', value: catatan, inline: false }] : [])
+        ],
+        footer: { text: 'KRIRP Attendance System v2.0 • Polri Digital' },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    try {
+      await fetch(WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      // Tetap simpan lokal meski webhook gagal
+    }
+
+    localStorage.setItem(getKey(nama), '1');
+    simpanLog({ nama, pangkat, jabatan, satuan, keterangan, jam, catatan });
+
+    // Reset form
+    document.getElementById('nama').value = '';
+    document.getElementById('pangkat').value = '';
+    document.getElementById('jabatan').value = '';
+    document.getElementById('satuan').value = '';
+    document.getElementById('catatan').value = '';
+    document.querySelector('input[name="keterangan"][value="HADIR"]').checked = true;
+
+    btn.disabled = false;
+    btn.innerHTML = 'KIRIM ABSENSI';
+
+    showStatus(`✅ Absensi ${nama} berhasil dikirim!`, 'sukses');
+    renderLog();
+  }
+</script>
+</body>
+</html>
