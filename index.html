@@ -7,1005 +7,1431 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KRIRP — Sistem Absensi Digital</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<title>KRIRP | Absensi Digital Anggota</title>
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  :root {
-    --gold: #D4A843;
-    --gold-light: #F0C96A;
-    --gold-dim: rgba(212,168,67,0.15);
-    --navy: #0A0E1A;
-    --navy-card: #0F1526;
-    --navy-border: rgba(212,168,67,0.2);
-    --text: #E8EAF0;
-    --text-dim: #7A8099;
-    --green: #22C55E;
-    --red: #EF4444;
-    --blue: #3B82F6;
-  }
-
-  body {
-    min-height: 100vh;
-    background: var(--navy);
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 20px 16px 40px;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* Subtle grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(212,168,67,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212,168,67,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Glow orb */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -180px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 700px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper { width: 100%; max-width: 500px; position: relative; z-index: 1; }
-
-  /* ── HEADER ── */
-  .header {
-    text-align: center;
-    padding: 32px 0 24px;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--gold-dim);
-    border: 1px solid var(--navy-border);
-    border-radius: 999px;
-    padding: 5px 14px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .badge-dot {
-    width: 6px; height: 6px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.4); }
-  }
-
-  .logo-emblem {
-    width: 72px; height: 72px;
-    background: linear-gradient(135deg, #1A2040, #0F1526);
-    border: 2px solid var(--gold);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 14px;
-    box-shadow: 0 0 30px rgba(212,168,67,0.3), inset 0 0 20px rgba(212,168,67,0.05);
-    font-size: 32px;
-  }
-
-  h1 {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--gold-light);
-    text-transform: uppercase;
-  }
-
-  .subtitle {
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* ── LIVE CLOCK ── */
-  .clock-bar {
-    background: rgba(212,168,67,0.06);
-    border: 1px solid var(--navy-border);
-    border-radius: 14px;
-    padding: 14px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    gap: 12px;
-  }
-
-  .clock-time {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--gold-light);
-    letter-spacing: 0.05em;
-    line-height: 1;
-  }
-
-  .clock-date {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: 3px;
-  }
-
-  .clock-right { text-align: right; }
-
-  .sesi-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .sesi-pagi  { background: rgba(59,130,246,0.15); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); }
-  .sesi-siang { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid var(--navy-border); }
-  .sesi-sore  { background: rgba(249,115,22,0.15); color: #FB923C; border: 1px solid rgba(249,115,22,0.3); }
-  .sesi-malam { background: rgba(139,92,246,0.15); color: #A78BFA; border: 1px solid rgba(139,92,246,0.3); }
-
-  /* ── CARD ── */
-  .card {
-    background: var(--navy-card);
-    border: 1px solid var(--navy-border);
-    border-radius: 20px;
-    padding: 28px 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-  }
-
-  .card-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--navy-border);
-  }
-
-  /* ── FORM FIELDS ── */
-  .field { margin-bottom: 14px; }
-
-  .field label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 7px;
-  }
-
-  .field-inner {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .field-icon {
-    position: absolute;
-    left: 14px;
-    font-size: 16px;
-    pointer-events: none;
-    opacity: 0.6;
-  }
-
-  .field input, .field select {
-    width: 100%;
-    padding: 13px 14px 13px 42px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    transition: all 0.2s;
-    appearance: none;
-  }
-
-  .field input::placeholder { color: rgba(255,255,255,0.2); }
-
-  .field input:focus, .field select:focus {
-    border-color: var(--gold);
-    background: rgba(212,168,67,0.06);
-    box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
-  }
-
-  .field select option { background: #1A2040; color: var(--text); }
-
-  /* ── KETERANGAN RADIO ── */
-  .keterangan-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .ket-option {
-    cursor: pointer;
-    display: block;
-  }
-
-  .ket-option input { display: none; }
-
-  .ket-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    background: rgba(255,255,255,0.03);
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-
-  .ket-option input:checked + .ket-label {
-    border-color: var(--gold);
-    background: var(--gold-dim);
-    color: var(--gold-light);
-  }
-
-  .ket-label:hover { background: rgba(255,255,255,0.06); }
-
-  /* ── CATATAN ── */
-  .field textarea {
-    width: 100%;
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    resize: none;
-    height: 72px;
-    transition: all 0.2s;
-  }
-
-  .field textarea::placeholder { color: rgba(255,255,255,0.2); }
-
-  .field textarea:focus {
-    border-color: var(--gold);
-    background: rgba(212,168,67,0.06);
-    box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
-  }
-
-  /* ── BUTTON ── */
-  .btn-submit {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B);
-    background-size: 200% 100%;
-    color: #0A0E1A;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: 'Rajdhani', sans-serif;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 4px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-submit:hover {
-    background-position: 100% 0;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(212,168,67,0.4);
-  }
-
-  .btn-submit:active { transform: translateY(0); }
-
-  .btn-submit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* ── STATUS ── */
-  .status-wrap {
-    margin-top: 14px;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .status-msg {
-    display: none;
-    padding: 13px 18px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    width: 100%;
-    text-align: center;
-    animation: fadeIn 0.3s ease;
-  }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-  .status-msg.show { display: block; }
-  .status-msg.sukses { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #4ADE80; }
-  .status-msg.error  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #F87171; }
-  .status-msg.warn   { background: rgba(212,168,67,0.12); border: 1px solid var(--navy-border); color: var(--gold-light); }
-
-  /* ── RIWAYAT HARI INI ── */
-  .log-card {
-    background: var(--navy-card);
-    border: 1px solid var(--navy-border);
-    border-radius: 20px;
-    padding: 22px 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-  }
-
-  .log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .log-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  .log-count {
-    background: var(--gold-dim);
-    border: 1px solid var(--navy-border);
-    color: var(--gold);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 999px;
-  }
-
-  .log-empty {
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 13px;
-    padding: 20px 0;
-    opacity: 0.6;
-  }
-
-  .log-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-
-  .log-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 11px;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .log-avatar {
-    width: 36px; height: 36px;
-    background: var(--gold-dim);
-    border: 1px solid var(--navy-border);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  .log-info { flex: 1; min-width: 0; }
-  .log-nama { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .log-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-  .log-jam {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gold);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .log-ket {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .ket-hadir  { background: rgba(34,197,94,0.12); color: #4ADE80; border: 1px solid rgba(34,197,94,0.2); }
-  .ket-izin   { background: rgba(59,130,246,0.12); color: #60A5FA; border: 1px solid rgba(59,130,246,0.2); }
-  .ket-dinas  { background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.2); }
-  .ket-sakit  { background: rgba(239,68,68,0.12); color: #F87171; border: 1px solid rgba(239,68,68,0.2); }
-
-  /* ── STATS BAR ── */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .stat-item {
-    background: var(--navy-card);
-    border: 1px solid var(--navy-border);
-    border-radius: 14px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--gold-light);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 4px;
-  }
-
-  /* ── FOOTER ── */
-  .footer {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-    opacity: 0.5;
-    padding-top: 4px;
-    padding-bottom: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  /* ── LOADER SPIN ── */
-  .spin {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(10,14,26,0.3);
-    border-top-color: #0A0E1A;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── KONFIRMASI MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.show { display: flex; }
-
-  .modal {
-    background: #131929;
-    border: 1px solid var(--navy-border);
-    border-radius: 20px;
-    padding: 28px 24px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    animation: fadeIn 0.25s ease;
-  }
-
-  .modal h3 {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--gold-light);
-    margin-bottom: 8px;
-  }
-
-  .modal p { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px; }
-
-  .modal-preview {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    line-height: 1.8;
-  }
-
-  .modal-preview strong { color: var(--gold-light); }
-
-  .modal-btns { display: flex; gap: 10px; }
-
-  .btn-cancel {
-    flex: 1; padding: 13px;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    background: transparent;
-    color: var(--text-dim);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-cancel:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-
-  .btn-confirm {
-    flex: 2; padding: 13px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(90deg, #B8860B, #D4A843);
-    color: #0A0E1A;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-confirm:hover { box-shadow: 0 4px 16px rgba(212,168,67,0.4); }
-
-  @media (max-width: 400px) {
-    h1 { font-size: 22px; }
-    .clock-time { font-size: 22px; }
-  }
+/* ── SPLASH ── */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: radial-gradient(ellipse at 60% 30%, #1E2A4A 0%, #0D1220 60%, #080C18 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+ 
+#splash.hide {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+}
+ 
+.splash-dots {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+ 
+.splash-dots::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+ 
+.splash-glow {
+  position: absolute;
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 400px;
+  background: radial-gradient(ellipse, rgba(200,134,10,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+ 
+.splash-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 40px 32px 36px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+  animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+ 
+@keyframes cardIn {
+  from { opacity:0; transform: translateY(30px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+ 
+.splash-emblem {
+  width: 90px; height: 90px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B1A1A, #C0392B);
+  border: 3px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 6px rgba(192,57,43,0.15), 0 12px 32px rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  animation: emblemIn 0.7s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+  position: relative;
+  overflow: hidden;
+}
+ 
+.splash-emblem::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+  animation: shimmer 3s 1s infinite;
+}
+ 
+@keyframes shimmer {
+  0%   { transform: translateX(-100%) rotate(0deg); }
+  100% { transform: translateX(100%) rotate(0deg); }
+}
+ 
+@keyframes emblemIn {
+  from { opacity:0; transform: scale(0.7) rotate(-10deg); }
+  to   { opacity:1; transform: scale(1) rotate(0deg); }
+}
+ 
+.splash-divider {
+  width: 48px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold, #C8860A), transparent);
+  margin: 0 auto 16px;
+}
+ 
+.splash-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  animation: fadeUp 0.5s 0.3s both;
+}
+ 
+.splash-title span { color: #F59E0B; }
+ 
+.splash-subtitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: fadeUp 0.5s 0.4s both;
+  line-height: 1.6;
+}
+ 
+.splash-separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.5s 0.45s both;
+}
+ 
+.splash-separator-line {
+  flex: 1; height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+ 
+.splash-separator-dot {
+  width: 4px; height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+}
+ 
+.splash-btn {
+  width: 100%;
+  padding: 17px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #8B1A1A 0%, #C0392B 50%, #E8720C 100%);
+  color: #FFFFFF;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  animation: fadeUp 0.5s 0.5s both;
+  box-shadow: 0 4px 20px rgba(192,57,43,0.4);
+}
+ 
+.splash-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+ 
+.splash-btn:hover::before { transform: translateX(100%); }
+.splash-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(192,57,43,0.5); }
+.splash-btn:active { transform: translateY(0); }
+ 
+.splash-pengelola {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 500;
+  animation: fadeUp 0.5s 0.55s both;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255,255,255,0.2);
+  transition: color 0.2s;
+  margin-bottom: 10px;
+}
+ 
+.splash-pengelola:hover { color: rgba(255,255,255,0.6); }
+ 
+.splash-version {
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.08em;
+  animation: fadeUp 0.5s 0.6s both;
+}
+ 
+.splash-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  animation: fadeUp 0.5s 0.35s both;
+}
+ 
+.splash-status-dot {
+  width: 6px; height: 6px;
+  background: #4ADE80;
+  border-radius: 50%;
+  animation: blink2 2s infinite;
+}
+ 
+@keyframes blink2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+ 
+.splash-status-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4ADE80;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+ 
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+ 
+/* ── MAIN PAGE hidden initially ── */
+#mainPage { display: none; }
+#mainPage.show { display: flex; flex-direction: column; align-items: center; width: 100%; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+:root {
+  --orange: #E8720C;
+  --gold: #C8860A;
+  --amber: #F59E0B;
+  --bg: #F5F0E8;
+  --card: #FFFFFF;
+  --dark: #1A1208;
+  --text: #2D1F0A;
+  --text-mid: #6B5A3E;
+  --text-dim: #A08C6E;
+  --border: #E0D4BC;
+  --input-bg: #FAF7F2;
+  --red: #C0392B;
+}
+ 
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+ 
+/* ── TICKER ── */
+.ticker-wrap {
+  width: 100%;
+  background: var(--dark);
+  overflow: hidden;
+  padding: 9px 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+ 
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 28s linear infinite;
+}
+ 
+.ticker-track:hover { animation-play-state: paused; }
+ 
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+ 
+.ticker-item {
+  white-space: nowrap;
+  padding: 0 32px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+ 
+.ticker-sep {
+  color: var(--gold);
+  padding: 0 8px;
+}
+ 
+/* ── WRAPPER ── */
+.page {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 0 48px;
+  display: flex;
+  flex-direction: column;
+}
+ 
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(160deg, #1A1208 0%, #2D1F0A 60%, #3D2910 100%);
+  padding: 28px 24px 32px;
+  position: relative;
+  overflow: hidden;
+}
+ 
+.header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(232,114,12,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+ 
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -30px;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(200,134,10,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+ 
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 20px;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.2s;
+  position: relative;
+  z-index: 1;
+}
+ 
+.back-btn:hover { color: rgba(255,255,255,0.8); }
+ 
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(232,114,12,0.2);
+  border: 1px solid rgba(232,114,12,0.4);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+ 
+.header-dot {
+  width: 5px; height: 5px;
+  background: #4ADE80;
+  border-radius: 50%;
+  animation: blink 2s infinite;
+}
+ 
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+ 
+.header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+ 
+.header h1 span { color: var(--amber); }
+ 
+.header-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+ 
+/* ── LIVE CLOCK STRIP ── */
+.clock-strip {
+  background: linear-gradient(135deg, #1A0F00 0%, #2E1A00 30%, #3D2200 60%, #2A1500 100%);
+  border-top: 1px solid rgba(232,114,12,0.3);
+  border-bottom: 1px solid rgba(232,114,12,0.15);
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+ 
+.clock-time {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--amber);
+  letter-spacing: 0.05em;
+}
+ 
+.clock-right { text-align: right; }
+.clock-date { font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 500; }
+.clock-sesi { font-size: 11px; font-weight: 700; color: var(--amber); margin-top: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+ 
+/* ── STATS ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: #FFFFFF;
+  border-bottom: 2px solid var(--border);
+}
+ 
+.stat {
+  padding: 14px 10px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+ 
+.stat:last-child { border-right: none; }
+ 
+.stat-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--orange);
+  line-height: 1;
+}
+ 
+.stat-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+  font-weight: 600;
+}
+ 
+/* ── FORM SECTION ── */
+.form-section {
+  background: var(--card);
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+ 
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+ 
+/* ── FIELDS ── */
+.field { margin-bottom: 14px; }
+ 
+.field:last-child { margin-bottom: 0; }
+ 
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+ 
+.field-label-icon {
+  font-size: 14px;
+  filter: grayscale(1);
+}
+ 
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none;
+}
+ 
+.field input::placeholder,
+.field textarea::placeholder { color: var(--text-dim); }
+ 
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--orange);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(232,114,12,0.1);
+}
+ 
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A08C6E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+ 
+.field select option { background: #FFFFFF; color: var(--text); }
+ 
+.field textarea { resize: none; height: 80px; }
+ 
+/* ── KETERANGAN ── */
+.ket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+ 
+.ket-opt { cursor: pointer; display: block; }
+.ket-opt input { display: none; }
+ 
+.ket-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: var(--input-bg);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+ 
+.ket-btn-icon { font-size: 15px; filter: grayscale(1); }
+ 
+.ket-opt input:checked + .ket-btn {
+  border-color: var(--orange);
+  background: rgba(232,114,12,0.07);
+  color: var(--orange);
+}
+ 
+/* ── FOTO BUKTI ── */
+.foto-area {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  background: var(--input-bg);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+ 
+.foto-area:hover { border-color: var(--orange); background: rgba(232,114,12,0.04); }
+ 
+.foto-area input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+ 
+.foto-placeholder {
+  font-size: 28px;
+  filter: grayscale(1);
+  margin-bottom: 8px;
+}
+ 
+.foto-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+ 
+.foto-preview {
+  display: none;
+  width: 100%;
+  border-radius: 8px;
+  max-height: 160px;
+  object-fit: cover;
+}
+ 
+/* ── BUTTONS ── */
+.btn-area {
+  background: var(--card);
+  padding: 20px 20px 8px;
+}
+ 
+.btn-submit {
+  width: 100%;
+  padding: 17px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #C0392B, #E8720C);
+  color: #FFFFFF;
+  font-family: 'Oswald', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+ 
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,114,12,0.4);
+}
+ 
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+ 
+.btn-cancel {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: underline;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+ 
+.btn-cancel:hover { color: var(--text); }
+ 
+/* ── STATUS ── */
+.status-msg {
+  display: none;
+  margin: 0 20px 16px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  animation: fadeUp 0.3s ease;
+}
+ 
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+ 
+.status-msg.show { display: block; }
+.status-msg.sukses { background: rgba(34,197,94,0.1); border: 1.5px solid rgba(34,197,94,0.3); color: #16A34A; }
+.status-msg.error  { background: rgba(192,57,43,0.1); border: 1.5px solid rgba(192,57,43,0.3); color: #C0392B; }
+.status-msg.warn   { background: rgba(232,114,12,0.1); border: 1.5px solid rgba(232,114,12,0.3); color: var(--orange); }
+ 
+/* ── LOG ABSENSI ── */
+.log-section {
+  background: var(--card);
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding: 20px 20px 8px;
+}
+ 
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+ 
+.log-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+ 
+.log-count {
+  background: rgba(232,114,12,0.1);
+  border: 1px solid rgba(232,114,12,0.3);
+  color: var(--orange);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+ 
+.log-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 20px 0;
+}
+ 
+.log-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+ 
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  animation: fadeUp 0.3s ease;
+}
+ 
+.log-icon {
+  width: 34px; height: 34px;
+  background: rgba(232,114,12,0.1);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  filter: grayscale(1);
+  flex-shrink: 0;
+}
+ 
+.log-info { flex: 1; min-width: 0; }
+.log-nama { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+ 
+.log-right { text-align: right; flex-shrink: 0; }
+.log-jam { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600; color: var(--orange); }
+ 
+.log-ket {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+.ket-hadir { background: rgba(34,197,94,0.12); color: #16A34A; }
+.ket-izin  { background: rgba(59,130,246,0.12); color: #2563EB; }
+.ket-dinas { background: rgba(232,114,12,0.12); color: var(--orange); }
+.ket-sakit { background: rgba(192,57,43,0.12); color: #C0392B; }
+ 
+/* ── FOOTER ── */
+.footer {
+  background: var(--dark);
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+ 
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+ 
+.modal-overlay.show { display: flex; }
+ 
+.modal {
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 28px 24px 36px;
+  width: 100%;
+  max-width: 420px;
+  animation: slideUp 0.3s ease;
+}
+ 
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+ 
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  margin: 0 auto 20px;
+}
+ 
+.modal h3 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+ 
+.modal p { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; }
+ 
+.modal-preview {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.9;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+ 
+.modal-preview strong { color: var(--orange); font-weight: 600; }
+ 
+.modal-btns { display: flex; gap: 10px; }
+ 
+.mbtn-cancel {
+  flex: 1; padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-mid);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+ 
+.mbtn-confirm {
+  flex: 2; padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #C0392B, #E8720C);
+  color: #FFFFFF;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+ 
+.mbtn-confirm:hover { box-shadow: 0 4px 16px rgba(232,114,12,0.4); }
+ 
+.spin {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+ 
+@media (max-width: 400px) {
+  .header h1 { font-size: 22px; }
+  .clock-time { font-size: 18px; }
+}
 </style>
 </head>
 <body>
-
-<div class="wrapper">
-
+ 
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-dots"></div>
+  <div class="splash-glow"></div>
+  <div class="splash-card">
+    <div class="splash-emblem">⚖️</div>
+    <div class="splash-divider"></div>
+    <div class="splash-title">Absensi Digital<br><span>Anggota</span></div>
+    <div class="splash-subtitle">Konsol Utama Integrasi Kedinasan<br>Indonesia Police Nasional</div>
+    <div class="splash-status-bar">
+      <div class="splash-status-dot"></div>
+      <div class="splash-status-text">Sistem Aktif</div>
+    </div>
+    <div class="splash-separator">
+      <div class="splash-separator-line"></div>
+      <div class="splash-separator-dot"></div>
+      <div class="splash-separator-line"></div>
+    </div>
+    <button class="splash-btn" onclick="masukForm()">ABSENSI</button>
+    <div class="splash-pengelola" onclick="alert('Hubungi pengelola sistem untuk akses admin.')">Pengelola</div>
+    <div class="splash-version">ID Pengembang: krirp_system | V3.0</div>
+  </div>
+</div>
+ 
+<!-- MAIN PAGE -->
+<div id="mainPage">
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack">
+    <!-- filled by JS -->
+  </div>
+</div>
+ 
+<div class="page">
+ 
   <!-- HEADER -->
   <div class="header">
-    <div class="badge"><span class="badge-dot"></span>Sistem Aktif</div>
-    <div class="logo-emblem">⚖️</div>
-    <h1>KRIRP Absensi</h1>
-    <div class="subtitle">Kepolisian Republik Indonesia — Sistem Presensi Digital</div>
+    <button class="back-btn" onclick="history.back()">&#8592; Kembali</button>
+    <div class="header-badge"><span class="header-dot"></span>Sistem Aktif</div>
+    <h1>Absensi Digital<br><span>Anggota</span></h1>
+    <div class="header-sub">Kepolisian Republik Indonesia Roleplay | KRIRP</div>
   </div>
-
-  <!-- LIVE CLOCK -->
-  <div class="clock-bar">
+ 
+  <!-- CLOCK -->
+  <div class="clock-strip">
     <div>
       <div class="clock-time" id="jam">--:--:--</div>
-      <div class="clock-date" id="tglLengkap">Memuat...</div>
+      <div class="clock-date" id="tglTeks">Memuat...</div>
     </div>
     <div class="clock-right">
-      <div class="sesi-badge" id="sesiLabel">—</div>
-      <div class="clock-date" style="margin-top:6px">Sesi Aktif</div>
+      <div class="clock-sesi" id="sesiTeks">—</div>
+      <div class="clock-date">Sesi Aktif</div>
     </div>
   </div>
-
+ 
   <!-- STATS -->
-  <div class="stats-bar">
-    <div class="stat-item">
+  <div class="stats">
+    <div class="stat">
       <div class="stat-num" id="statHadir">0</div>
       <div class="stat-label">Hadir</div>
     </div>
-    <div class="stat-item">
+    <div class="stat">
       <div class="stat-num" id="statIzin">0</div>
       <div class="stat-label">Izin/Dinas</div>
     </div>
-    <div class="stat-item">
+    <div class="stat">
       <div class="stat-num" id="statTotal">0</div>
       <div class="stat-label">Total</div>
     </div>
   </div>
-
-  <!-- FORM CARD -->
-  <div class="card">
-    <div class="card-title">Data Anggota</div>
-
+ 
+  <!-- FORM -->
+  <div class="form-section">
+    <div class="section-label">Data Anggota</div>
+ 
     <div class="field">
-      <label>Wajib Masukkan Usn Roblox!</label>
-      <div class="field-inner">
-        <span class="field-icon">👤</span>
-        <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="off">
+      <div class="field-label">
+        <span class="field-label-icon">🏛️</span> Divisi
       </div>
+      <select id="divisi">
+        <option value="" disabled selected>Pilih divisi...</option>
+        <optgroup label="Fungsi Operasional">
+          <option>Bareskrim</option>
+          <option>Sabhara</option>
+          <option>Satlantas</option>
+          <option>Polairud</option>
+          <option>Brimob</option>
+          <option>Prpam</option>
+        </optgroup>
+        <optgroup label="Fungsi Pendukung">
+          <option>Humas</option>
+          <option>Hubinter</option>
+          <option>SDM</option>
+          <option>Logistik</option>
+          <option>Staff Akpol</option>
+          <option>Lemdiklat</option>
+        </optgroup>
+        <optgroup label="Pimpinan">
+          <option>Kepala Divisi</option>
+          <option>Waka Kepala Divisi</option>
+          <option>Kepala Biro</option>
+          <option>Head System Development</option>
+        </optgroup>
+      </select>
     </div>
-
+ 
     <div class="field">
-      <label>Pangkat</label>
-      <div class="field-inner">
-        <span class="field-icon">🎖️</span>
-        <select id="pangkat">
-          <option value="" disabled selected>Pilih pangkat</option>
-          <optgroup label="Perwira Tinggi">
-            <option>Jenderal</option>
-            <option>Komisaris Jenderal (Komjend)</option>
-            <option>Inspektur Jenderal (Irjen)</option>
-            <option>Brigadir Jenderal (Brigjen)</option>
-          </optgroup>
-          <optgroup label="Perwira Menengah">
-            <option>Komisaris Besar (Kombes)</option>
-            <option>Ajun Komisaris Besar (AKBP)</option>
-            <option>Komisaris Polisi (Kompol)</option>
-          </optgroup>
-          <optgroup label="Perwira Pertama">
-            <option>Ajun Komisaris Polisi (AKP)</option>
-            <option>Inspektur Polisi Satu (Iptu)</option>
-            <option>Inspektur Polisi Dua (Ipda)</option>
-          </optgroup>
-          <optgroup label="Bintara">
-            <option>Aiptu</option>
-            <option>Aipda</option>
-            <option>Bripka</option>
-            <option>Brigadir</option>
-            <option>Briptu</option>
-            <option>Bripda</option>
-          </optgroup>
-          <optgroup label="Tamtama">
-            <option>Abiptu</option>
-            <option>Abipda</option>
-            <option>Bharaka</option>
-            <option>Bharatu</option>
-            <option>Bharada</option>
-          </optgroup>
-        </select>
+      <div class="field-label">
+        <span class="field-label-icon">📅</span> Hari Kehadiran
       </div>
+      <select id="hariKehadiran">
+        <option value="" disabled selected>Pilih hari kehadiran...</option>
+        <option>Senin</option>
+        <option>Selasa</option>
+        <option>Rabu</option>
+        <option>Kamis</option>
+        <option>Jumat</option>
+        <option>Sabtu</option>
+        <option>Minggu</option>
+      </select>
     </div>
-
+ 
     <div class="field">
-      <label>Jabatan</label>
-      <div class="field-inner">
-        <span class="field-icon">💼</span>
-        <input type="text" id="jabatan" placeholder="Contoh: Kapolri." autocomplete="off">
+      <div class="field-label">
+        <span class="field-label-icon">👤</span> Nama Anggota
       </div>
+      <input type="text" id="nama" placeholder="Masukkan nama lengkap Anda..." autocomplete="off">
     </div>
-
+ 
     <div class="field">
-      <label>Satuan / Kesatuan</label>
-      <div class="field-inner">
-        <span class="field-icon">🏛️</span>
-        <input type="text" id="satuan" placeholder="Contoh: Propam, Sabhara" autocomplete="off">
+      <div class="field-label">
+        <span class="field-label-icon">🎖️</span> Pangkat
       </div>
+      <select id="pangkat">
+        <option value="" disabled selected>Pilih pangkat...</option>
+        <optgroup label="Perwira Tinggi">
+          <option>Jenderal</option>
+          <option>Komisaris Jenderal (Komjend)</option>
+          <option>Inspektur Jenderal (Irjen)</option>
+          <option>Brigadir Jenderal (Brigjen)</option>
+        </optgroup>
+        <optgroup label="Perwira Menengah">
+          <option>Komisaris Besar (Kombes)</option>
+          <option>Ajun Komisaris Besar (AKBP)</option>
+          <option>Komisaris Polisi (Kompol)</option>
+        </optgroup>
+        <optgroup label="Perwira Pertama">
+          <option>Ajun Komisaris Polisi (AKP)</option>
+          <option>Inspektur Polisi Satu (Iptu)</option>
+          <option>Inspektur Polisi Dua (Ipda)</option>
+        </optgroup>
+        <optgroup label="Bintara">
+          <option>Aiptu</option><option>Aipda</option>
+          <option>Bripka</option><option>Brigadir</option>
+          <option>Briptu</option><option>Bripda</option>
+        </optgroup>
+        <optgroup label="Tamtama">
+          <option>Abiptu</option><option>Abipda</option>
+          <option>Bharaka</option><option>Bharatu</option><option>Bharada</option>
+        </optgroup>
+      </select>
     </div>
-
+ 
     <div class="field">
-      <label>Keterangan Kehadiran</label>
-      <div class="keterangan-grid">
-        <label class="ket-option">
-          <input type="radio" name="keterangan" value="HADIR" checked>
-          <div class="ket-label">✅ Hadir</div>
-        </label>
-        <label class="ket-option">
-          <input type="radio" name="keterangan" value="IZIN">
-          <div class="ket-label">📋 Izin</div>
-        </label>
-        <label class="ket-option">
-          <input type="radio" name="keterangan" value="DINAS LUAR">
-          <div class="ket-label">🚔 Dinas Luar</div>
-        </label>
-        <label class="ket-option">
-          <input type="radio" name="keterangan" value="SAKIT">
-          <div class="ket-label">🏥 Sakit</div>
-        </label>
+      <div class="field-label">
+        <span class="field-label-icon">💼</span> Jabatan
       </div>
-    </div>
-
-    <div class="field">
-      <label>Catatan (opsional)</label>
-      <textarea id="catatan" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-    </div>
-
-    <button class="btn-submit" id="btnAbsen" onclick="konfirmasi()">
-      KIRIM ABSENSI
-    </button>
-
-    <div class="status-wrap">
-      <div class="status-msg" id="status"></div>
+      <input type="text" id="jabatan" placeholder="Contoh: Kabareskrim" autocomplete="off">
     </div>
   </div>
-
-  <!-- LOG HARI INI -->
-  <div class="log-card">
+ 
+  <!-- KETERANGAN -->
+  <div class="form-section">
+    <div class="section-label">Status Kehadiran</div>
+    <div class="field">
+      <div class="ket-grid">
+        <label class="ket-opt">
+          <input type="radio" name="ket" value="HADIR" checked>
+          <div class="ket-btn"><span class="ket-btn-icon">✅</span> Hadir</div>
+        </label>
+        <label class="ket-opt">
+          <input type="radio" name="ket" value="IZIN">
+          <div class="ket-btn"><span class="ket-btn-icon">📋</span> Izin</div>
+        </label>
+        <label class="ket-opt">
+          <input type="radio" name="ket" value="DINAS LUAR">
+          <div class="ket-btn"><span class="ket-btn-icon">🚔</span> Dinas Luar</div>
+        </label>
+        <label class="ket-opt">
+          <input type="radio" name="ket" value="SAKIT">
+          <div class="ket-btn"><span class="ket-btn-icon">🏥</span> Sakit</div>
+        </label>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- FOTO & CATATAN -->
+  <div class="form-section">
+    <div class="section-label">Bukti & Catatan</div>
+ 
+    <div class="field">
+      <div class="field-label">
+        <span class="field-label-icon">📷</span> Bukti Hadir
+      </div>
+      <div class="foto-area" id="fotoArea">
+        <input type="file" id="fotoInput" accept="image/*" onchange="previewFoto(event)">
+        <div id="fotoPlaceholder">
+          <div class="foto-placeholder">🖼️</div>
+          <div class="foto-text">Belum ada gambar terpilih</div>
+        </div>
+        <img id="fotoPreview" class="foto-preview" alt="Preview">
+      </div>
+    </div>
+ 
+    <div class="field">
+      <div class="field-label">
+        <span class="field-label-icon">📝</span> Catatan (opsional)
+      </div>
+      <textarea id="catatan" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+    </div>
+  </div>
+ 
+  <!-- STATUS -->
+  <div class="status-msg" id="status"></div>
+ 
+  <!-- BUTTONS -->
+  <div class="btn-area">
+    <button class="btn-submit" id="btnAbsen" onclick="konfirmasi()">KIRIM ABSENSI</button>
+    <button class="btn-cancel" onclick="resetForm()">BATALKAN</button>
+  </div>
+ 
+  <!-- LOG -->
+  <div class="log-section">
     <div class="log-header">
-      <div class="log-title">📋 Log Absensi Hari Ini</div>
+      <div class="log-title">Log Absensi Hari Ini</div>
       <div class="log-count" id="logCount">0</div>
     </div>
     <div id="logList"><div class="log-empty">Belum ada absensi hari ini.</div></div>
   </div>
-
+ 
   <div class="footer">KRIRP Attendance System v2.0 — Polri Digital</div>
 </div>
-
-<!-- MODAL KONFIRMASI -->
+ 
+</div><!-- end mainPage -->
+ 
+<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h3>⚠️ Konfirmasi Absensi</h3>
+    <div class="modal-handle"></div>
+    <h3>Konfirmasi Absensi</h3>
     <p>Pastikan data berikut sudah benar sebelum mengirim.</p>
     <div class="modal-preview" id="modalPreview"></div>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="tutupModal()">Batal</button>
-      <button class="btn-confirm" onclick="absen()">Kirim Sekarang</button>
+      <button class="mbtn-cancel" onclick="tutupModal()">Batal</button>
+      <button class="mbtn-confirm" onclick="absen()">Kirim</button>
     </div>
   </div>
 </div>
-
+ 
 <script>
-  // =====================================================
-  // GANTI WEBHOOK DI BAWAH INI
-  // =====================================================
-  const WEBHOOK = "https://discord.com/api/webhooks/1514474696106705026/hLfoi_p9Iz5HhFpJWXyiLorKa-S-cx5HUTaTZTpIaKlKtlyRxqn4MGEcdumFuqvQnV2p";
-  // =====================================================
-
-  // ─── CLOCK ────────────────────────────────────────────
-  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-  function updateClock() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('jam').textContent = `${h}:${m}:${s}`;
-
-    const hari = HARI[now.getDay()];
-    const tgl  = now.getDate();
-    const bln  = BULAN[now.getMonth()];
-    const thn  = now.getFullYear();
-    document.getElementById('tglLengkap').textContent = `${hari}, ${tgl} ${bln} ${thn}`;
-
-    const jam = now.getHours();
-    let sesi = '', cls = '';
-    if (jam >= 5  && jam < 12) { sesi = '🌅 Pagi';  cls = 'sesi-pagi';  }
-    else if (jam >= 12 && jam < 15) { sesi = '☀️ Siang'; cls = 'sesi-siang'; }
-    else if (jam >= 15 && jam < 19) { sesi = '🌇 Sore';  cls = 'sesi-sore';  }
-    else { sesi = '🌙 Malam'; cls = 'sesi-malam'; }
-
-    const el = document.getElementById('sesiLabel');
-    el.textContent = sesi;
-    el.className = 'sesi-badge ' + cls;
-  }
-
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // ─── HELPERS ──────────────────────────────────────────
-  function getTanggal() {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  }
-
-  function getJam() {
-    return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
-
-  function getKey(nama) { return `absen_${nama.toLowerCase().trim()}_${getTanggal()}`; }
-
-  function showStatus(msg, type) {
-    const el = document.getElementById('status');
-    el.textContent = msg;
-    el.className = `status-msg show ${type}`;
-    setTimeout(() => el.className = 'status-msg', 4500);
-  }
-
-  // ─── LOG LOKAL ────────────────────────────────────────
-  function ambilLog() {
-    const raw = localStorage.getItem(`log_${getTanggal()}`);
-    return raw ? JSON.parse(raw) : [];
-  }
-
-  function simpanLog(entry) {
-    const log = ambilLog();
-    log.push(entry);
-    localStorage.setItem(`log_${getTanggal()}`, JSON.stringify(log));
-  }
-
-  function avatarIcon(ket) {
-    if (ket === 'HADIR') return '🟢';
-    if (ket === 'IZIN') return '🔵';
-    if (ket === 'DINAS LUAR') return '🟡';
-    if (ket === 'SAKIT') return '🔴';
-    return '⚪';
-  }
-
-  function ketClass(ket) {
-    if (ket === 'HADIR') return 'ket-hadir';
-    if (ket === 'IZIN') return 'ket-izin';
-    if (ket === 'DINAS LUAR') return 'ket-dinas';
-    if (ket === 'SAKIT') return 'ket-sakit';
-    return '';
-  }
-
-  function renderLog() {
-    const log = ambilLog();
-    const listEl = document.getElementById('logList');
-    const countEl = document.getElementById('logCount');
-    countEl.textContent = log.length;
-
-    // Stats
-    const hadir = log.filter(x => x.keterangan === 'HADIR').length;
-    const izin  = log.filter(x => x.keterangan === 'IZIN' || x.keterangan === 'DINAS LUAR' || x.keterangan === 'SAKIT').length;
-    document.getElementById('statHadir').textContent = hadir;
-    document.getElementById('statIzin').textContent  = izin;
-    document.getElementById('statTotal').textContent = log.length;
-
-    if (log.length === 0) {
-      listEl.innerHTML = '<div class="log-empty">Belum ada absensi hari ini.</div>';
-      return;
-    }
-
-    listEl.innerHTML = '<ul class="log-list">' +
-      [...log].reverse().map(e => `
-        <li class="log-item">
-          <div class="log-avatar">${avatarIcon(e.keterangan)}</div>
-          <div class="log-info">
-            <div class="log-nama">${e.nama}</div>
-            <div class="log-meta">${e.pangkat} — ${e.jabatan}</div>
-          </div>
-          <span class="log-ket ${ketClass(e.keterangan)}">${e.keterangan}</span>
+// ── SPLASH ───────────────────────────────────────────
+function masukForm() {
+  const splash = document.getElementById('splash');
+  const main   = document.getElementById('mainPage');
+  splash.classList.add('hide');
+  setTimeout(() => {
+    splash.style.display = 'none';
+    main.classList.add('show');
+  }, 500);
+}
+ 
+// =====================================================
+// GANTI WEBHOOK DI BAWAH INI
+// =====================================================
+const WEBHOOK = "https://discord.com/api/webhooks/1514474696106705026/hLfoi_p9Iz5HhFpJWXyiLorKa-S-cx5HUTaTZTpIaKlKtlyRxqn4MGEcdumFuqvQnV2p";
+// =====================================================
+ 
+// ── TICKER ──────────────────────────────────────────
+const tickerItems = [
+  "KRIRP Sistem Absensi Digital",
+  "Kepolisian Republik Indonesia",
+  "Presensi Anggota Tercatat Otomatis",
+  "Jaga Integritas & Kedisiplinan",
+  "Absensi Tepat Waktu adalah Kewajiban",
+  "Indonesia Police National",
+  "Sistem Aktif 24 Jam",
+];
+ 
+function buildTicker() {
+  const track = document.getElementById('tickerTrack');
+  const content = tickerItems.map(t =>
+    `<span class="ticker-item">${t}<span class="ticker-sep">|</span></span>`
+  ).join('');
+  track.innerHTML = content + content;
+}
+buildTicker();
+ 
+// ── CLOCK ────────────────────────────────────────────
+const HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+ 
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('jam').textContent = `${h}:${m}:${s}`;
+ 
+  const tgl = `${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('tglTeks').textContent = tgl;
+ 
+  const jam = now.getHours();
+  let sesi = '';
+  if      (jam >= 5  && jam < 12) sesi = 'Sesi Pagi';
+  else if (jam >= 12 && jam < 15) sesi = 'Sesi Siang';
+  else if (jam >= 15 && jam < 19) sesi = 'Sesi Sore';
+  else                             sesi = 'Sesi Malam';
+  document.getElementById('sesiTeks').textContent = sesi;
+}
+setInterval(updateClock, 1000);
+updateClock();
+ 
+// ── FOTO PREVIEW ─────────────────────────────────────
+function previewFoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('fotoPlaceholder').style.display = 'none';
+    const img = document.getElementById('fotoPreview');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+ 
+// ── HELPERS ──────────────────────────────────────────
+function getTanggal() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+ 
+function getJam() {
+  return new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+ 
+function getKey(nama) { return `absen_${nama.toLowerCase().trim()}_${getTanggal()}`; }
+ 
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = `status-msg show ${type}`;
+  setTimeout(() => el.className = 'status-msg', 4500);
+}
+ 
+function resetForm() {
+  document.getElementById('nama').value = '';
+  document.getElementById('pangkat').value = '';
+  document.getElementById('jabatan').value = '';
+  document.getElementById('divisi').value = '';
+  document.getElementById('hariKehadiran').value = '';
+  document.getElementById('catatan').value = '';
+  document.getElementById('fotoInput').value = '';
+  document.getElementById('fotoPreview').style.display = 'none';
+  document.getElementById('fotoPlaceholder').style.display = 'block';
+  document.querySelector('input[name="ket"][value="HADIR"]').checked = true;
+}
+ 
+// ── LOG ──────────────────────────────────────────────
+function ambilLog() {
+  try { return JSON.parse(localStorage.getItem(`log_${getTanggal()}`)) || []; }
+  catch { return []; }
+}
+ 
+function simpanLog(e) {
+  const log = ambilLog(); log.push(e);
+  localStorage.setItem(`log_${getTanggal()}`, JSON.stringify(log));
+}
+ 
+function ketClass(k) {
+  if (k==='HADIR') return 'ket-hadir';
+  if (k==='IZIN') return 'ket-izin';
+  if (k==='DINAS LUAR') return 'ket-dinas';
+  if (k==='SAKIT') return 'ket-sakit';
+  return '';
+}
+ 
+function ketIcon(k) {
+  if (k==='HADIR') return '✅';
+  if (k==='IZIN') return '📋';
+  if (k==='DINAS LUAR') return '🚔';
+  if (k==='SAKIT') return '🏥';
+  return '📌';
+}
+ 
+function renderLog() {
+  const log = ambilLog();
+  document.getElementById('logCount').textContent = log.length;
+  const hadir = log.filter(x=>x.ket==='HADIR').length;
+  const lain  = log.filter(x=>x.ket!=='HADIR').length;
+  document.getElementById('statHadir').textContent = hadir;
+  document.getElementById('statIzin').textContent  = lain;
+  document.getElementById('statTotal').textContent = log.length;
+ 
+  const el = document.getElementById('logList');
+  if (!log.length) { el.innerHTML = '<div class="log-empty">Belum ada absensi hari ini.</div>'; return; }
+ 
+  el.innerHTML = '<ul class="log-list">' +
+    [...log].reverse().map(e => `
+      <li class="log-item">
+        <div class="log-icon">${ketIcon(e.ket)}</div>
+        <div class="log-info">
+          <div class="log-nama">${e.nama}</div>
+          <div class="log-meta">${e.pangkat} — ${e.jabatan}</div>
+        </div>
+        <div class="log-right">
           <div class="log-jam">${e.jam}</div>
-        </li>`).join('') +
-      '</ul>';
+          <span class="log-ket ${ketClass(e.ket)}">${e.ket}</span>
+        </div>
+      </li>`).join('') + '</ul>';
+}
+ 
+renderLog();
+ 
+// ── MODAL ────────────────────────────────────────────
+function konfirmasi() {
+  const nama  = document.getElementById('nama').value.trim();
+  const pkt   = document.getElementById('pangkat').value;
+  const jbt   = document.getElementById('jabatan').value.trim();
+  const div   = document.getElementById('divisi').value;
+  const hari  = document.getElementById('hariKehadiran').value;
+  const ket   = document.querySelector('input[name="ket"]:checked').value;
+ 
+  if (!nama || !pkt || !jbt || !div || !hari) {
+    showStatus('Lengkapi semua data yang wajib diisi!', 'warn');
+    return;
   }
-
+ 
+  if (localStorage.getItem(getKey(nama))) {
+    showStatus('Anda sudah melakukan absensi hari ini!', 'warn');
+    return;
+  }
+ 
+  document.getElementById('modalPreview').innerHTML = `
+    <strong>Nama</strong> : ${nama}<br>
+    <strong>Pangkat</strong> : ${pkt}<br>
+    <strong>Jabatan</strong> : ${jbt}<br>
+    <strong>Divisi</strong> : ${div}<br>
+    <strong>Hari</strong> : ${hari}<br>
+    <strong>Status</strong> : ${ket}
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+ 
+function tutupModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+ 
+// ── ABSEN ────────────────────────────────────────────
+async function absen() {
+  tutupModal();
+  const nama  = document.getElementById('nama').value.trim();
+  const pkt   = document.getElementById('pangkat').value;
+  const jbt   = document.getElementById('jabatan').value.trim();
+  const div   = document.getElementById('divisi').value;
+  const hari  = document.getElementById('hariKehadiran').value;
+  const ket   = document.querySelector('input[name="ket"]:checked').value;
+  const cat   = document.getElementById('catatan').value.trim();
+  const jam   = getJam();
+ 
+  const btn = document.getElementById('btnAbsen');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Mengirim...';
+ 
+  const warna = { HADIR:3329330, IZIN:3093503, 'DINAS LUAR':15237721, SAKIT:12533547 };
+  const emoji  = { HADIR:'✅', IZIN:'📋', 'DINAS LUAR':'🚔', SAKIT:'🏥' };
+ 
+  const payload = {
+    embeds:[{
+      title:`${emoji[ket]||'📌'}  KRIRP — PRESENSI DIGITAL`,
+      color: warna[ket]||15237721,
+      fields:[
+        { name:'👤 Nama Anggota', value:`**${nama}**`,  inline:true },
+        { name:'🎖️ Pangkat',      value:`**${pkt}**`,   inline:true },
+        { name:'💼 Jabatan',      value:`**${jbt}**`,   inline:true },
+        { name:'🏛️ Divisi',       value:`**${div}**`,   inline:true },
+        { name:'📅 Hari',         value:`**${hari}**`,  inline:true },
+        { name:'📍 Status',       value:`**${ket}**`,   inline:true },
+        { name:'🕒 Jam Absen',    value:`**${jam}**`,   inline:true },
+        { name:'📆 Tanggal',      value:`**${getTanggal()}**`, inline:true },
+        ...(cat ? [{ name:'📝 Catatan', value:cat, inline:false }] : [])
+      ],
+      footer:{ text:'KRIRP Attendance System v2.0 • Polri Digital' },
+      timestamp: new Date().toISOString()
+    }]
+  };
+ 
+  try {
+    await fetch(WEBHOOK, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+  } catch(e) {}
+ 
+  localStorage.setItem(getKey(nama), '1');
+  simpanLog({ nama, pangkat:pkt, jabatan:jbt, divisi:div, hari, ket, jam, catatan:cat });
+ 
+  resetForm();
+  btn.disabled = false;
+  btn.innerHTML = 'KIRIM ABSENSI';
+  showStatus(`Absensi ${nama} berhasil dikirim!`, 'sukses');
   renderLog();
-
-  // ─── MODAL ────────────────────────────────────────────
-  function konfirmasi() {
-    const nama     = document.getElementById('nama').value.trim();
-    const pangkat  = document.getElementById('pangkat').value;
-    const jabatan  = document.getElementById('jabatan').value.trim();
-    const satuan   = document.getElementById('satuan').value.trim();
-    const keterangan = document.querySelector('input[name="keterangan"]:checked').value;
-    const catatan  = document.getElementById('catatan').value.trim();
-
-    if (!nama || !pangkat || !jabatan || !satuan) {
-      showStatus('⚠️  Lengkapi semua data yang wajib diisi!', 'warn');
-      return;
-    }
-
-    if (localStorage.getItem(getKey(nama))) {
-      showStatus('⚠️  Anda sudah melakukan absensi hari ini!', 'warn');
-      return;
-    }
-
-    document.getElementById('modalPreview').innerHTML = `
-      <strong>Nama</strong> : ${nama}<br>
-      <strong>Pangkat</strong> : ${pangkat}<br>
-      <strong>Jabatan</strong> : ${jabatan}<br>
-      <strong>Satuan</strong> : ${satuan}<br>
-      <strong>Status</strong> : ${keterangan}${catatan ? `<br><strong>Catatan</strong> : ${catatan}` : ''}
-    `;
-
-    document.getElementById('modalOverlay').classList.add('show');
-  }
-
-  function tutupModal() {
-    document.getElementById('modalOverlay').classList.remove('show');
-  }
-
-  // ─── ABSEN ────────────────────────────────────────────
-  async function absen() {
-    tutupModal();
-
-    const nama       = document.getElementById('nama').value.trim();
-    const pangkat    = document.getElementById('pangkat').value;
-    const jabatan    = document.getElementById('jabatan').value.trim();
-    const satuan     = document.getElementById('satuan').value.trim();
-    const keterangan = document.querySelector('input[name="keterangan"]:checked').value;
-    const catatan    = document.getElementById('catatan').value.trim();
-    const jam        = getJam();
-    const tanggal    = getTanggal();
-
-    const btn = document.getElementById('btnAbsen');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spin"></span>Mengirim...';
-
-    // Warna embed berdasarkan keterangan
-    const warna = { HADIR: 3329330, IZIN: 3093503, 'DINAS LUAR': 13909771, SAKIT: 15158332 };
-    const emoji  = { HADIR: '✅', IZIN: '📋', 'DINAS LUAR': '🚔', SAKIT: '🏥' };
-
-    const payload = {
-      embeds: [{
-        title: `${emoji[keterangan] || '📌'}  KRIRP — PRESENSI DIGITAL`,
-        color: warna[keterangan] || 13909771,
-        fields: [
-          { name: '👤 Nama Anggota', value: `**${nama}**`,    inline: true },
-          { name: '🎖️ Pangkat',      value: `**${pangkat}**`, inline: true },
-          { name: '💼 Jabatan',      value: `**${jabatan}**`, inline: true },
-          { name: '🏛️ Satuan',       value: `**${satuan}**`,  inline: true },
-          { name: '📍 Keterangan',   value: `**${keterangan}**`, inline: true },
-          { name: '🕒 Jam Absen',    value: `**${jam}**`,     inline: true },
-          { name: '📅 Tanggal',      value: `**${tanggal}**`, inline: false },
-          ...(catatan ? [{ name: '📝 Catatan', value: catatan, inline: false }] : [])
-        ],
-        footer: { text: 'KRIRP Attendance System v2.0 • Polri Digital' },
-        timestamp: new Date().toISOString()
-      }]
-    };
-
-    try {
-      await fetch(WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (e) {
-      // Tetap simpan lokal meski webhook gagal
-    }
-
-    localStorage.setItem(getKey(nama), '1');
-    simpanLog({ nama, pangkat, jabatan, satuan, keterangan, jam, catatan });
-
-    // Reset form
-    document.getElementById('nama').value = '';
-    document.getElementById('pangkat').value = '';
-    document.getElementById('jabatan').value = '';
-    document.getElementById('satuan').value = '';
-    document.getElementById('catatan').value = '';
-    document.querySelector('input[name="keterangan"][value="HADIR"]').checked = true;
-
-    btn.disabled = false;
-    btn.innerHTML = 'KIRIM ABSENSI';
-
-    showStatus(`✅ Absensi ${nama} berhasil dikirim!`, 'sukses');
-    renderLog();
-  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 </body>
 </html>
+ 
